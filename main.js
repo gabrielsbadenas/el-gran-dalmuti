@@ -1,20 +1,13 @@
-const readline = require("readline")
-/*
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-});
-*/
-//const readline = require('readline');
+const readline = require("readline");
 
 function prompt(question) {
   const rl = readline.createInterface({
     input: process.stdin,
-    output: process.stdout
+    output: process.stdout,
   });
 
-  return new Promise(resolve => {
-    rl.question(question, answer => {
+  return new Promise((resolve) => {
+    rl.question(question, (answer) => {
       rl.close();
       resolve(answer);
     });
@@ -25,16 +18,18 @@ class Card {
   constructor(value) {
     this.value = value;
   }
-  getValue(){
-    return this.value
+  getValue() {
+    return this.value;
   }
-  min(value) {
-    return this.value < value;
-  }
-  max(value) {
-    return this.value > value;
+  canThrowOn(card) {
+    //if (card === undefined) {
+      //return true;
+   // } else {
+      return this.value > card.value;
+   // }
   }
 }
+
 class Rank {
   constructor(value, amount) {
     this.cards = [];
@@ -44,6 +39,7 @@ class Rank {
     }
   }
 }
+
 class Deck {
   constructor() {
     this.cards = [];
@@ -82,10 +78,10 @@ class Deck {
     });
   }
   shuffle() {
-    //fisher-yares knuth
+    //fisher-yates knuth
     let currentIndex = this.cards.length,
       randomIndex;
-    while (currentIndex != 0) {
+    while (currentIndex !== 0) {
       randomIndex = Math.floor(Math.random() * currentIndex);
       currentIndex--;
       [this.cards[currentIndex], this.cards[randomIndex]] = [
@@ -100,23 +96,20 @@ class Deck {
     });
   }
   distribute(playerNumber) {
-    //TODO ordenar las cartas de la mano
     let hands = [];
     let deck = [...this.cards];
-    //console.log(deck)
-    let cardsPerHand = deck.length / playerNumber;
+    let cardsPerHand = Math.floor(deck.length / playerNumber);
     for (let i = 0; i < playerNumber; i++) {
       let cards = [];
       for (let j = 0; j < cardsPerHand; j++) {
         cards.push(deck.pop());
       }
-      cards.sort((a,b)=>{return a.value-b.value})
-      let newHand = new Hand(cards,i);
-
-      //console.log(newHand)
+      cards.sort((a, b) => {
+        return a.value - b.value;
+      });
+      let newHand = new Hand(cards, i);
       hands.push(newHand);
     }
-    //console.log(hands)
     return hands;
   }
 }
@@ -128,13 +121,17 @@ class Hand {
   }
   checkThrow(indexes, pile) {
     // Check that the indexes are valid
-    if (!indexes.every(index => index >= 0 && index < this.cards.length)) {
+    if (!indexes.every((index) => index >= 0 && index < this.cards.length)) {
       console.log("Invalid index(es)!");
       return false;
     }
 
+    // Check that
+
     // Check that the cards at the specified indexes can be thrown
-    let canThrow = indexes.every(index => this.cards[index].canThrowOn(pile.topCard()));
+    let canThrow = indexes.every((index) =>
+      this.cards[index].canThrowOn(pile.topCard())
+    );
 
     if (!canThrow) {
       console.log("Selected card(s) cannot be thrown on top of the pile!");
@@ -145,18 +142,17 @@ class Hand {
     return true;
   }
   throwIndex(indexes, pile) {
-    
     indexes.sort();
     indexes = indexes.reverse();
-    console.log(indexes)
+    console.log(indexes);
     let cards = [];
     indexes.forEach((element) => {
       let card = this.cards.splice(element, 1);
-      console.log(card[0])
+      console.log(card[0]);
       cards.push(card[0]);
     });
-    console.log(this.cards)
-    console.log(127,cards)
+    console.log(this.cards);
+    console.log(127, cards);
     let allEqual = (arr) => arr.every((v) => v.value === arr[0].value);
     if (allEqual(cards)) {
       pile.changeCard({
@@ -193,16 +189,83 @@ class Hand {
   show() {
     console.log("j");
     for (let index = 0; index < this.cards.length; index++) {
-        const element = this.cards[index];
-        console.log('('+index+')'+element.value)
-        
+      const element = this.cards[index];
+      console.log("(" + index + ")" + element.value);
     }
     this.cards.forEach((element) => {
       //console.log(element.value);
     });
   }
 }
+class Pile {
+  constructor() {
+    this.cards = [];
+    this.value = 0;
+  }
+  show() {
+    console.log(this.cards);
+  }
+  topCard() {
+    return this.cards[this.cards.length - 1];
+  }
+  changeCard({ cards, amount, value, hand }) {
+    if (value === 1 && this.value === 0) {
+      console.log("Invalid move! Can't change to value 1 when pile is empty!");
+    } else if (value <= this.value) {
+      console.log("Invalid move! Card value is not greater than pile value!");
+    } else {
+      console.log("Changing pile card to:");
+      console.log(cards);
+      this.cards = this.cards.concat(cards);
+      this.value = value;
+      console.log("New pile value: " + this.value);
+      console.log("Hand " + hand + " has " + amount + " cards left.");
+    }
+  }
+}
 
+async function dalmuti() {
+  const numberOfPlayers = 3;
+  const deck = new Deck();
+  deck.shuffle();
+  const hands = deck.distribute(numberOfPlayers);
+  const pile = new Pile();
+  let currentPlayerIndex = 0;
+  let winner = -1;
+
+  while (winner === -1) {
+    console.log("\nCurrent pile:");
+    //pile.topCard().getValue();
+    console.log(pile.cards[-1]);
+    console.log("Current player: " + currentPlayerIndex);
+    hands[currentPlayerIndex].show();
+
+    const input = await prompt(
+      "Enter the indexes of the cards you want to throw separated by commas (or 'p' to pass): "
+    );
+
+    if (input === "p") {
+      console.log("Player " + currentPlayerIndex + " has passed!");
+      currentPlayerIndex = (currentPlayerIndex + 1) % numberOfPlayers;
+      continue;
+    }
+
+    const indexes = input.split(",").map((x) => parseInt(x));
+
+    if (hands[currentPlayerIndex].checkThrow(indexes, pile)) {
+      hands[currentPlayerIndex].throwIndex(indexes, pile);
+      if (hands[currentPlayerIndex].goingOut()) {
+        winner = currentPlayerIndex;
+      }
+      currentPlayerIndex = (currentPlayerIndex + 1) % numberOfPlayers;
+    }
+  }
+
+  console.log("Player " + winner + " wins!");
+}
+
+dalmuti();
+/*
 class Pile {
   constructor() {
     this.currentCards = {
@@ -231,6 +294,7 @@ class Pile {
   reset() {}
 
 }
+*/
 /*
 let p = new Pile();
 const d = new Deck();
@@ -290,7 +354,10 @@ class Game {
         currentPlayer = (currentPlayer + 1) % this.players.length;
         continue;
       }
-      let indexes = input.toString().split(",").map((index) => parseInt(index));
+      let indexes = input
+        .toString()
+        .split(",")
+        .map((index) => parseInt(index));
       let canThrow = currentHand.checkThrow(indexes, this.pile);
       if (canThrow) {
         currentHand.throw(indexes, this.pile);
@@ -318,10 +385,10 @@ class Player {
     this.hand = hand;
   }
 }
-
+/*
 let game = new Game();
 game.addPlayer("Alice");
 game.addPlayer("Bob");
 game.addPlayer("Charlie");
 game.start();
-
+*/
