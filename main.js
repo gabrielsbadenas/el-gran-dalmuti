@@ -1,8 +1,25 @@
 const readline = require("readline")
+/*
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout,
 });
+*/
+//const readline = require('readline');
+
+function prompt(question) {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+  });
+
+  return new Promise(resolve => {
+    rl.question(question, answer => {
+      rl.close();
+      resolve(answer);
+    });
+  });
+}
 
 class Card {
   constructor(value) {
@@ -109,14 +126,23 @@ class Hand {
     this.cards = cards;
     this.hand = hand;
   }
-  throw(cards) {
-    //cards is an array of values
-    //arg is the indexes of the cards that are going to be thrown
-    //it is checked if the cards are in hand
-    //it is checked if the hand has the correct amount
-    //the cards are poped
-    //it is checked if they can be thrown in the pile
-    //if nobody has a smaller card the last player throws one or more cards
+  checkThrow(indexes, pile) {
+    // Check that the indexes are valid
+    if (!indexes.every(index => index >= 0 && index < this.cards.length)) {
+      console.log("Invalid index(es)!");
+      return false;
+    }
+
+    // Check that the cards at the specified indexes can be thrown
+    let canThrow = indexes.every(index => this.cards[index].canThrowOn(pile.topCard()));
+
+    if (!canThrow) {
+      console.log("Selected card(s) cannot be thrown on top of the pile!");
+      return false;
+    }
+
+    // Return true if both checks pass
+    return true;
   }
   throwIndex(indexes, pile) {
     
@@ -185,6 +211,9 @@ class Pile {
       hand: 0,
     };
   }
+  show(){
+    console.log(this.currentCards)
+  }
   changeCard(card) {
     if (
       card.amount === this.currentCards.amount &&
@@ -200,7 +229,9 @@ class Pile {
     }
   }
   reset() {}
+
 }
+/*
 let p = new Pile();
 const d = new Deck();
 //d.show();
@@ -223,3 +254,74 @@ rl.question('what cards are you throwing?',function(answer){
 h.forEach((element) => {
   //element.show()
 });
+*/
+class Game {
+  constructor() {
+    this.players = [];
+    this.deck = new Deck();
+    this.pile = new Pile();
+  }
+  addPlayer(name) {
+    let newPlayer = new Player(name);
+    this.players.push(newPlayer);
+  }
+  start() {
+    this.deck.shuffle();
+    let hands = this.deck.distribute(this.players.length);
+    for (let i = 0; i < this.players.length; i++) {
+      let newPlayer = this.players[i];
+      newPlayer.setHand(hands[i]);
+    }
+    this.play();
+  }
+  play() {
+    let currentPlayer = 0;
+    let playersRemaining = this.players.length;
+    while (playersRemaining > 1) {
+      let currentHand = this.players[currentPlayer].hand;
+      console.log("Current hand: " + currentPlayer);
+      currentHand.show();
+      console.log("Current pile: ");
+      this.pile.show();
+      let input = prompt(
+        "Choose cards to throw (separated by commas) or type 'pass': "
+      );
+      if (input.toString().toLowerCase() === "pass") {
+        currentPlayer = (currentPlayer + 1) % this.players.length;
+        continue;
+      }
+      let indexes = input.toString().split(",").map((index) => parseInt(index));
+      let canThrow = currentHand.checkThrow(indexes, this.pile);
+      if (canThrow) {
+        currentHand.throw(indexes, this.pile);
+        console.log("Player " + currentPlayer + " throws: ");
+        this.pile.show();
+        if (currentHand.goingOut()) {
+          console.log("Player " + currentPlayer + " wins!");
+          return;
+        }
+        currentPlayer = (currentPlayer + 1) % this.players.length;
+        continue;
+      }
+      console.log("You can't throw those cards.");
+    }
+    console.log("Player " + currentPlayer + " wins!");
+  }
+}
+
+class Player {
+  constructor(name) {
+    this.name = name;
+    this.hand = null;
+  }
+  setHand(hand) {
+    this.hand = hand;
+  }
+}
+
+let game = new Game();
+game.addPlayer("Alice");
+game.addPlayer("Bob");
+game.addPlayer("Charlie");
+game.start();
+
