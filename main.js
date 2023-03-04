@@ -25,7 +25,7 @@ class Card {
     //if (card === undefined) {
       //return true;
    // } else {
-      return this.value > card.value;
+      return this.value < card.value;
    // }
   }
 }
@@ -146,8 +146,10 @@ class Hand {
     indexes = indexes.reverse();
     console.log(indexes);
     let cards = [];
+    let thisCards = [...this.cards]
+    console.log(150,indexes)
     indexes.forEach((element) => {
-      let card = this.cards.splice(element, 1);
+      let card = thisCards.splice(element, 1);
       console.log(card[0]);
       cards.push(card[0]);
     });
@@ -184,7 +186,7 @@ class Hand {
   throwValues() {}
   pass() {}
   goingOut() {
-    return this.cards.length > 0;
+    return this.cards.length < 0;
   }
   show() {
     console.log("j");
@@ -199,7 +201,7 @@ class Hand {
 }
 class Pile {
   constructor() {
-    this.cards = [];
+    this.cards = [new Card(13)];
     this.value = 0;
   }
   show() {
@@ -236,7 +238,7 @@ async function dalmuti() {
   while (winner === -1) {
     console.log("\nCurrent pile:");
     //pile.topCard().getValue();
-    console.log(pile.cards[-1]);
+    console.log(pile.topCard().getValue());
     console.log("Current player: " + currentPlayerIndex);
     hands[currentPlayerIndex].show();
 
@@ -264,7 +266,7 @@ async function dalmuti() {
   console.log("Player " + winner + " wins!");
 }
 
-dalmuti();
+
 /*
 class Pile {
   constructor() {
@@ -385,6 +387,7 @@ class Player {
     this.hand = hand;
   }
 }
+dalmuti();
 /*
 let game = new Game();
 game.addPlayer("Alice");
