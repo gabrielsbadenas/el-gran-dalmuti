@@ -22,11 +22,7 @@ class Card {
     return this.value;
   }
   canThrowOn(card) {
-    //if (card === undefined) {
-      //return true;
-   // } else {
-      return this.value < card.value;
-   // }
+    return this.value < card.value;
   }
 }
 
@@ -120,6 +116,7 @@ class Hand {
     this.hand = hand;
   }
   checkThrow(indexes, pile) {
+    /*
     // Check that the indexes are valid
     if (!indexes.every((index) => index >= 0 && index < this.cards.length)) {
       console.log("Invalid index(es)!");
@@ -130,14 +127,14 @@ class Hand {
 
     // Check that the cards at the specified indexes can be thrown
     let canThrow = indexes.every((index) =>
-      this.cards[index].canThrowOn(pile.topCard())
+      this.cards[index].canThrowOn(pile.value)
     );
 
     if (!canThrow) {
       console.log("Selected card(s) cannot be thrown on top of the pile!");
       return false;
     }
-
+*/
     // Return true if both checks pass
     return true;
   }
@@ -146,15 +143,18 @@ class Hand {
     indexes = indexes.reverse();
     console.log(indexes);
     let cards = [];
-    let thisCards = [...this.cards]
-    console.log(150,indexes)
+    //let thisCards = [...this.cards]
+    //console.log(150,indexes)
     indexes.forEach((element) => {
-      let card = thisCards.splice(element, 1);
-      console.log(card[0]);
+      let card = this.cards.splice(element, 1);
+      //console.log(card[0]);
       cards.push(card[0]);
     });
-    console.log(this.cards);
-    console.log(127, cards);
+    //console.log(this.cards);
+    //console.log(127, cards);
+    if (this.cards.length == 0) {
+      return false
+    }
     let allEqual = (arr) => arr.every((v) => v.value === arr[0].value);
     if (allEqual(cards)) {
       pile.changeCard({
@@ -183,8 +183,6 @@ class Hand {
       pile.changeCard({ cards, amount: cards.length, value, hand: this.hand });
     }
   }
-  throwValues() {}
-  pass() {}
   goingOut() {
     return this.cards.length < 0;
   }
@@ -202,24 +200,26 @@ class Hand {
 class Pile {
   constructor() {
     this.cards = [new Card(13)];
-    this.value = 0;
+    this.value = 14;
+    this.amount = 1;
   }
   show() {
     console.log(this.cards);
   }
   topCard() {
-    return this.cards[this.cards.length - 1];
+    return this.cards; //[this.cards.length - 1];
   }
   changeCard({ cards, amount, value, hand }) {
     if (value === 1 && this.value === 0) {
       console.log("Invalid move! Can't change to value 1 when pile is empty!");
-    } else if (value <= this.value) {
+    } else if (value >= this.value) {
       console.log("Invalid move! Card value is not greater than pile value!");
     } else {
       console.log("Changing pile card to:");
       console.log(cards);
       this.cards = this.cards.concat(cards);
       this.value = value;
+      this.amount = amount;
       console.log("New pile value: " + this.value);
       console.log("Hand " + hand + " has " + amount + " cards left.");
     }
@@ -237,8 +237,9 @@ async function dalmuti() {
 
   while (winner === -1) {
     console.log("\nCurrent pile:");
+    console.log(pile.amount, pile.value);
     //pile.topCard().getValue();
-    console.log(pile.topCard().getValue());
+    //console.log(pile.topCard())//.getValue());
     console.log("Current player: " + currentPlayerIndex);
     hands[currentPlayerIndex].show();
 
@@ -265,7 +266,6 @@ async function dalmuti() {
 
   console.log("Player " + winner + " wins!");
 }
-
 
 /*
 class Pile {
@@ -297,30 +297,7 @@ class Pile {
 
 }
 */
-/*
-let p = new Pile();
-const d = new Deck();
-//d.show();
-d.shuffle();
-//d.show();
-let h = d.distribute(5);
-h[0].show()
-rl.question('what cards are you throwing?',function(answer){
-    let stringArray = answer.split(',')
-    let intArray = []
-    stringArray.forEach(element => {
-        intArray.push(parseInt(element))
-    });
-    h[0].throwIndex(intArray,p)
-    //console.clear()
-    console.log(p.currentCards)
-    rl.close()
-})
 
-h.forEach((element) => {
-  //element.show()
-});
-*/
 class Game {
   constructor() {
     this.players = [];
@@ -388,10 +365,3 @@ class Player {
   }
 }
 dalmuti();
-/*
-let game = new Game();
-game.addPlayer("Alice");
-game.addPlayer("Bob");
-game.addPlayer("Charlie");
-game.start();
-*/
