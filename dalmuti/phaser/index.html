@@ -17,8 +17,26 @@
         constructor() {
           super();
         }
-
+        preload() {
+          this.load.setBaseURL("./img");
+          const png = ".png";
+          for (let i = 1; i < 15; i++) {
+            this.load.image(i + "", i + png);
+          }
+        }
         create() {
+          let spriteArray = [];
+          for (let i = 1; i < 15; i++) {
+            const sprite = this.physics.add.sprite(i * 24, 200, "" + i);
+            console.log(1);
+            sprite.on("pointerdown", function (pointer) {
+              console.log(1);
+              this.setTint(0x000000);
+              sprite.setPosition(sprite.position.x, sprite.position.y + 10);
+              console.log("a");
+            });
+            spriteArray.push(sprite);
+          }
           //  Using the Scene Data Plugin we can store data on a Scene level
           this.data.set("lives", 3);
           this.data.set("level", 5);
@@ -29,29 +47,50 @@
             font: "64px Courier",
             fill: "#00ff00",
           });
-          console.log('a')
+          console.log("a");
           text.setText([
-            "Level: " + this.data.get("level"),
-            "Lives: " + this.data.get("lives"),
+            //"Level: " + this.data.get("level"),
+            //"Lives: " + this.data.get("lives"),
+            "Value: " + this.data.get("value"),
             "Amount: " + this.data.get("amount"),
-            "Value: " + this.data.get("value")
           ]);
-          text.on('pointerdown', function(pointer){
-            this.setTint(0x000000)
-            console.log('a')
-          })
-          this.input.on('pointerdown', function (pointer) {
-            //this.input
-            //if(this.pointer.x && this.pointer.y){
+          text.on("pointerdown", function (pointer) {
+            this.setTint(0x000000);
+            console.log("a");
+          });
+          this.input.on(
+            "pointerdown",
+            function (pointer) {
+              //this.input
+              //if(this.pointer.x && this.pointer.y){
+              //            }
+            },
+            this
+          );
+          this.input.on(
+            "pointerdown",
+            function (pointer) {
+              for (let j = 0; j < spriteArray; j++) {
+                if (spriteArray[j].getBounds().constains(pointer.x, pointer.y)) {
+                  console.log(pointer.x, pointer.y);
 
-//            }
-            }, this);
-          this.input.on('pointermove',function (pointer){
-            if (pointer.isDown){
-
+                }
+              }
+              console.log(spriteArray[0].getBounds())
+              console.log(pointer.x, pointer.y);
+            },
+            this
+          );
+          this.input.on("gameobjectdown", onObjectClicked);
+          this.input.on("pointermove", function (pointer) {
+            if (pointer.isDown) {
             }
-          })
+          });
         }
+      }
+      function onObjectClicked(pointer, gameObject) {
+        gameObject.setTint(0x000000);
+        console.log(1);
       }
 
       const config = {
@@ -60,6 +99,13 @@
         width: 800,
         height: 600,
         scene: [Example],
+        physics: {
+          default: "arcade",
+          arcade: {
+            gravity: { y: 0 },
+            debug: false,
+          },
+        },
       };
 
       const game = new Phaser.Game(config);

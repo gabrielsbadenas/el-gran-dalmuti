@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>My Phaser Game</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.55.2/phaser.min.js"></script>
+    <script>
+      var suits = ["spades", "hearts", "clubs", "diamonds"];
+      var ranks = [
+        "ace",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "jack",
+        "queen",
+        "king",
+      ];
+
+      var deck = [];
+      for (var i = 0; i < suits.length; i++) {
+        for (var j = 0; j < ranks.length; j++) {
+          var card = {
+            suit: suits[i],
+            rank: ranks[j],
+            value: j + 1,
+          };
+          deck.push(card);
+        }
+      }
+      function shuffle(deck) {
+        for (var i = deck.length - 1; i > 0; i--) {
+          var j = Math.floor(Math.random() * (i + 1));
+          var temp = deck[i];
+          deck[i] = deck[j];
+          deck[j] = temp;
+        }
+      }
+      shuffle(deck);
+      var numPlayers = 4;
+      var handSize = Math.floor(deck.length / numPlayers);
+
+      var hands = [];
+      for (var i = 0; i < numPlayers; i++) {
+        hands.push(deck.slice(i * handSize, (i + 1) * handSize));
+      }
+      var positions = [
+        "The Great Dalmuti",
+        "The Lesser Dalmuti",
+        "Merchant",
+        "Peon",
+      ];
+      function create() {
+        // create card sprites
+        var cardSprites = [];
+        for (var i = 0; i < deck.length; i++) {
+          var card = deck[i];
+          var cardSprite = this.add.sprite(
+            100 + i * 20,
+            300,
+            "card_" + card.rank + "_of_" + card.suit
+          );
+          cardSprites.push(cardSprite);
+        }
+
+        // create player hands
+        var playerHands = [];
+        for (var i = 0; i < hands.length; i++) {
+          var playerHand = this.add.group();
+          var cards = hands[i];
+          for (var j = 0; j < cards.length; j++) {
+            var card = cards[j];
+            var cardSprite = this.add.sprite(
+              100 + j * 80,
+              100 + i * 200,
+              "card_" + card.rank + "_of_" + card.suit
+            );
+            cardSprite.setInteractive();
+            cardSprite.on(
+              "pointerdown",
+              function () {
+                // TODO: play card logic
+              },
+              this
+            );
+            playerHand.add(cardSprite);
+          }
+          playerHands.push(playerHand);
+        }
+
+        // add player positions
+        var playerPositions = [];
+        for (var i = 0; i < positions.length; i++) {
+          var position = positions[i];
+          var playerPosition = this.add.text(100 + i * 200, 700, position, {
+            fontSize: "32px",
+            fill: "#fff",
+          });
+          playerPositions.push(playerPosition);
+        }
+
+        // TODO: implement game logic
+      }
+    </script>
+  </body>
+</html>
