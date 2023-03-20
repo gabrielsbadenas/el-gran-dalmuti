@@ -112,6 +112,12 @@
       const game = new Phaser.Game(config);
       */
      // Initialize Phaser game
+
+
+
+
+     
+     /*
      class MyScene extends Phaser.Scene {
     constructor() {
         super({ key: 'MyScene' });
@@ -142,7 +148,38 @@ var game = new Phaser.Game({
     parent: 'game-container',
     scene: [ MyScene ]
 });
+*/
+class MyGame extends Phaser.Scene {
+  constructor() {
+    super({ key: 'MyGame' });
+  }
 
+  preload() {
+    this.load.setBaseURL("./img");
+          const png = ".png";
+          for (let i = 1; i < 15; i++) {
+            this.load.image(i + "", i + png);
+          }
+  }
+
+  create() {
+    this.add.image(400, 300, '1').setInteractive();
+    this.input.on('gameobjectdown', this.onImageClicked, this);
+  }
+
+  onImageClicked(pointer, gameObject) {
+    console.log('You clicked the image!');
+  }
+}
+
+const config = {
+  type: Phaser.AUTO,
+  width: 800,
+  height: 600,
+  scene: MyGame
+};
+
+const game = new Phaser.Game(config);
     </script>
   </body>
 </html>
